@@ -1,35 +1,16 @@
-import { Session } from "../session";
-import { Http, HttpOptions } from "../base";
+import { HttpService } from ".";
 import { User, UserSchema, OAuthCredentials } from "../models";
 import { PaginationUtil, PaginatedArray } from "../utils";
+import { Inject } from "typedi";
 
-export interface UserWebServiceOptions extends HttpOptions {
-  session?: Session;
-}
-
-export default class UserWebService extends Http {
-  protected options: UserWebServiceOptions;
-  protected static instance: UserWebService;
-
-  constructor(options: UserWebServiceOptions) {
-    super(options);
-    if (options.session) {
-      this.interceptors(options.session.interceptors());
-    }
-  }
-
-  public static getInstance(options: UserWebServiceOptions): UserWebService {
-    if (!this.instance) {
-      this.instance = new UserWebService(options);
-    }
-    return this.instance;
-  }
+export default class UserWebService {
+  @Inject() protected http: HttpService;
 
   /**
    * Find all {#User}s.
    */
   public async findAll(): Promise<PaginatedArray<User>> {
-    const response = await this.get("/users");
+    const response = await this.http.get("/users");
 
     if (!response || response.status !== 200) {
       throw response;
@@ -46,7 +27,7 @@ export default class UserWebService extends Http {
    * @param id The id of the {#User}
    */
   public async findById(id: string): Promise<User> {
-    const response = await this.get(`/users/${id}`);
+    const response = await this.http.get(`/users/${id}`);
 
     if (!response || response.status !== 200) {
       throw response;
@@ -62,7 +43,7 @@ export default class UserWebService extends Http {
    * @param user The values you want to update
    */
   public async update(id: string, user: Partial<UserSchema>): Promise<User> {
-    const response = await this.post(`/users/${id}`, user);
+    const response = await this.http.post(`/users/${id}`, user);
 
     if (!response || response.status !== 200) {
       throw response;
@@ -77,7 +58,7 @@ export default class UserWebService extends Http {
    * @param consumer The values you want to upsert
    */
   public async upsert(user: UserSchema): Promise<User> {
-    const response = await this.put(`/users`, user);
+    const response = await this.http.put(`/users`, user);
 
     if (!response || response.status !== 200) {
       throw response;
@@ -92,7 +73,7 @@ export default class UserWebService extends Http {
    * @param id The id of the {#User}
    */
   public async deleteById(id: string): Promise<boolean> {
-    const response = await this.delete(`/users/${id}`);
+    const response = await this.http.delete(`/users/${id}`);
 
     if (!response || response.status !== 200) {
       throw response;
@@ -107,7 +88,7 @@ export default class UserWebService extends Http {
    * @param credentials The OAuth 2.0 credentials for the request
    */
   public async me(credentials?: OAuthCredentials): Promise<User> {
-    const response = await this.get(
+    const response = await this.http.get(
       "/users/me",
       {},
       {
@@ -122,7 +103,7 @@ export default class UserWebService extends Http {
    * Set a new password using a secret token.
    */
   public async setPassword(token: string, password: string): Promise<void> {
-    const response = await this.post("/users/password", { token, password });
+    const response = await this.http.post("/users/password", { token, password });
 
     if (!response || response.status !== 200) {
       throw response;
@@ -135,7 +116,7 @@ export default class UserWebService extends Http {
    * @param email The email to be reset
    */
   public async reset(email: string): Promise<void> {
-    const response = await this.post("/users/reset", { email });
+    const response = await this.http.post("/users/reset", { email });
 
     if (!response || response.status !== 200) {
       throw response;

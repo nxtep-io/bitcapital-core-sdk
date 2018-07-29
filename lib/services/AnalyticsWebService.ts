@@ -1,34 +1,16 @@
-import { Session } from "../session";
-import { Http, HttpOptions } from "../base";
+import { HttpService } from ".";
 import { AnalyticsActiveResponse, AnalyticsDevicesResponse } from "./response";
+import { Service, Inject } from "typedi";
 
-export interface AnalyticsWebServiceOptions extends HttpOptions {
-  session?: Session;
-}
-
-export default class AnalyticsWebService extends Http {
-  protected options: AnalyticsWebServiceOptions;
-  protected static instance: AnalyticsWebService;
-
-  constructor(options: AnalyticsWebServiceOptions) {
-    super(options);
-    if (options.session) {
-      this.interceptors(options.session.interceptors());
-    }
-  }
-
-  public static getInstance(options: AnalyticsWebServiceOptions): AnalyticsWebService {
-    if (!this.instance) {
-      this.instance = new AnalyticsWebService(options);
-    }
-    return this.instance;
-  }
+@Service()
+export default class AnalyticsWebService {
+  @Inject() protected http: HttpService;
 
   /**
    * Gets analytics for the currently active tokens.
    */
   public async active(query: any = {}): Promise<AnalyticsActiveResponse> {
-    const response = await this.get("/analytics/active", query);
+    const response = await this.http.get("/analytics/active", query);
 
     if (!response || response.status !== 200) {
       throw response;
@@ -41,7 +23,7 @@ export default class AnalyticsWebService extends Http {
    * Gets device analytics from recent tokens.
    */
   public async devices(query: any = {}): Promise<AnalyticsDevicesResponse> {
-    const response = await this.get("/analytics/devices", query);
+    const response = await this.http.get("/analytics/devices", query);
 
     if (!response || response.status !== 200) {
       throw response;

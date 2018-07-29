@@ -32,7 +32,9 @@
     "localstorage-polyfill": "^1.0.1",
     "moment": "^2.22.0",
     "qs": "^6.5.1",
+    "reflect-metadata": "^0.1.12",
     "rimraf": "^2.6.2",
+    "typedi": "^0.8.0",
     "winston": "^2.4.0"
   },
   "devDependencies": {

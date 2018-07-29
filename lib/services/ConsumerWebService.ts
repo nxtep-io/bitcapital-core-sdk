@@ -1,29 +1,10 @@
-import { Session } from "../session";
-import { Http, HttpOptions } from "../base";
+import { HttpService } from ".";
 import { User, UserSchema, Document, Wallet, DocumentSchema } from "../models";
 import { PaginationUtil, PaginatedArray } from "../utils";
+import { Inject } from "typedi";
 
-export interface ConsumerWebServiceOptions extends HttpOptions {
-  session?: Session;
-}
-
-export default class ConsumerWebService extends Http {
-  protected options: ConsumerWebServiceOptions;
-  protected static instance: ConsumerWebService;
-
-  constructor(options: ConsumerWebServiceOptions) {
-    super(options);
-    if (options.session) {
-      this.interceptors(options.session.interceptors());
-    }
-  }
-
-  public static getInstance(options: ConsumerWebServiceOptions): ConsumerWebService {
-    if (!this.instance) {
-      this.instance = new ConsumerWebService(options);
-    }
-    return this.instance;
-  }
+export default class ConsumerWebService {
+  @Inject() protected http: HttpService;
 
   /**
    * Find all {#User} with role {#Consumer}s
@@ -31,7 +12,7 @@ export default class ConsumerWebService extends Http {
    * @param query The query of the search
    */
   public async findAll(): Promise<PaginatedArray<User>> {
-    const response = await this.get("/consumers");
+    const response = await this.http.get("/consumers");
 
     if (!response || response.status !== 200) {
       throw response;
@@ -48,7 +29,7 @@ export default class ConsumerWebService extends Http {
    * @param id The id of the {#Consumer}
    */
   public async findById(id: string): Promise<User> {
-    const response = await this.get(`/consumers/${id}`);
+    const response = await this.http.get(`/consumers/${id}`);
 
     if (!response || response.status !== 200) {
       throw response;
@@ -64,7 +45,7 @@ export default class ConsumerWebService extends Http {
    * @param id The id of the {#Consumer}
    */
   public async findDocumentsById(id: string): Promise<Document[]> {
-    const response = await this.get(`/consumers/${id}/documents`);
+    const response = await this.http.get(`/consumers/${id}/documents`);
 
     if (!response || response.status !== 200) {
       throw response;
@@ -80,7 +61,7 @@ export default class ConsumerWebService extends Http {
    * @param id The id of the {#Consumer}
    */
   public async findDocumentByIdAndType(id: string, type: DocumentType): Promise<Document> {
-    const response = await this.get(`/consumers/${id}/documents/${type}`);
+    const response = await this.http.get(`/consumers/${id}/documents/${type}`);
 
     if (!response || response.status !== 200) {
       throw response;
@@ -95,7 +76,7 @@ export default class ConsumerWebService extends Http {
    * @param id The id of the {#Consumer}
    */
   public async findWalletsById(id: string): Promise<Wallet[]> {
-    const response = await this.get(`/consumers/${id}/wallets`);
+    const response = await this.http.get(`/consumers/${id}/wallets`);
 
     if (!response || response.status !== 200) {
       throw response;
@@ -110,7 +91,7 @@ export default class ConsumerWebService extends Http {
    * @param consumer The consumer properties
    */
   public async create(consumer: UserSchema): Promise<User> {
-    const response = await this.post("/consumers", consumer);
+    const response = await this.http.post("/consumers", consumer);
 
     if (!response || response.status !== 200) {
       throw response;
@@ -125,7 +106,7 @@ export default class ConsumerWebService extends Http {
    * @param id The id of the {#Consumer}
    */
   public async createDocument(id: string, document: DocumentSchema): Promise<Document> {
-    const response = await this.post(`/consumers/${id}/documents`, document);
+    const response = await this.http.post(`/consumers/${id}/documents`, document);
 
     if (!response || response.status !== 200) {
       throw response;
@@ -141,7 +122,7 @@ export default class ConsumerWebService extends Http {
    * @param consumer The values you want to update
    */
   public async update(id: string, consumer: Partial<UserSchema>): Promise<User> {
-    const response = await this.post(`/consumers/${id}`, consumer);
+    const response = await this.http.post(`/consumers/${id}`, consumer);
 
     if (!response || response.status !== 200) {
       throw response;
@@ -159,7 +140,7 @@ export default class ConsumerWebService extends Http {
     const formData = new FormData();
     formData.append("picture", picture);
 
-    const response = await this.post(`/consumers/${id}/documents/${type}/${side}`, formData, {
+    const response = await this.http.post(`/consumers/${id}/documents/${type}/${side}`, formData, {
       headers: {
         "Content-Type": "multipart/form-data"
       }
@@ -178,7 +159,7 @@ export default class ConsumerWebService extends Http {
    * @param id The id of the {#User} with role {#Consumer}
    */
   public async deleteById(id: string): Promise<boolean> {
-    const response = await this.delete(`/consumers/${id}`);
+    const response = await this.http.delete(`/consumers/${id}`);
 
     if (!response || response.status !== 200) {
       throw response;

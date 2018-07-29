@@ -1,35 +1,17 @@
-import { Session } from "../session";
-import { Http, HttpOptions } from "../base";
+import { HttpService } from ".";
 import { Domain, DomainSchema, User } from "../models";
 import { PaginationUtil, PaginatedArray } from "../utils";
+import { Inject, Service } from "typedi";
 
-export interface DomainWebServiceOptions extends HttpOptions {
-  session?: Session;
-}
-
-export default class DomainWebService extends Http {
-  protected options: DomainWebServiceOptions;
-  protected static instance: DomainWebService;
-
-  constructor(options: DomainWebServiceOptions) {
-    super(options);
-    if (options.session) {
-      this.interceptors(options.session.interceptors());
-    }
-  }
-
-  public static getInstance(options: DomainWebServiceOptions): DomainWebService {
-    if (!this.instance) {
-      this.instance = new DomainWebService(options);
-    }
-    return this.instance;
-  }
+@Service()
+export default class DomainWebService {
+  @Inject() protected http: HttpService;
 
   /**
    * Find all {#Domain}s
    */
   public async findAll(): Promise<PaginatedArray<Domain>> {
-    const response = await this.get("/domains");
+    const response = await this.http.get("/domains");
 
     if (!response || response.status !== 200) {
       throw response;
@@ -46,7 +28,7 @@ export default class DomainWebService extends Http {
    * @param id The id of the {#Domain}
    */
   public async findById(id: string): Promise<Domain> {
-    const response = await this.get(`/domains/${id}`);
+    const response = await this.http.get(`/domains/${id}`);
 
     if (!response || response.status !== 200) {
       throw response;
@@ -61,7 +43,7 @@ export default class DomainWebService extends Http {
    * @param id The id of the {#Domain}
    */
   public async findUsersById(id: string): Promise<User> {
-    const response = await this.get(`/domains/${id}/users`);
+    const response = await this.http.get(`/domains/${id}/users`);
 
     if (!response || response.status !== 200) {
       throw response;
@@ -76,7 +58,7 @@ export default class DomainWebService extends Http {
    * @param id The id of the {#Domain}
    */
   public async findConsumersById(id: string): Promise<User> {
-    const response = await this.get(`/domains/${id}/consumers`);
+    const response = await this.http.get(`/domains/${id}/consumers`);
 
     if (!response || response.status !== 200) {
       throw response;
@@ -91,7 +73,7 @@ export default class DomainWebService extends Http {
    * @param id The id of the {#Domain}
    */
   public async findMediatorsById(id: string): Promise<User> {
-    const response = await this.get(`/domains/${id}/mediators`);
+    const response = await this.http.get(`/domains/${id}/mediators`);
 
     if (!response || response.status !== 200) {
       throw response;
@@ -106,7 +88,7 @@ export default class DomainWebService extends Http {
    * @param domain The {#Domain} properties
    */
   public async create(domain: DomainSchema): Promise<Domain> {
-    const response = await this.post("/domains", domain);
+    const response = await this.http.post("/domains", domain);
 
     if (!response || response.status !== 200) {
       throw response;
@@ -122,7 +104,7 @@ export default class DomainWebService extends Http {
    * @param domain The values you want to update
    */
   public async update(id: string, domain: Partial<DomainSchema>): Promise<Domain> {
-    const response = await this.post(`/domains/${id}`, domain);
+    const response = await this.http.post(`/domains/${id}`, domain);
 
     if (!response || response.status !== 200) {
       throw response;
@@ -137,7 +119,7 @@ export default class DomainWebService extends Http {
    * @param domain The values you want to upsert
    */
   public async upsert(domain: DomainSchema): Promise<Domain> {
-    const response = await this.put(`/domains`, domain);
+    const response = await this.http.put(`/domains`, domain);
 
     if (!response || response.status !== 200) {
       throw response;
@@ -152,7 +134,7 @@ export default class DomainWebService extends Http {
    * @param id The id of the {#Domain}
    */
   public async deleteById(id: string): Promise<boolean> {
-    const response = await this.delete(`/domains/${id}`);
+    const response = await this.http.delete(`/domains/${id}`);
 
     if (!response || response.status !== 200) {
       throw response;

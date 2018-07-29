@@ -1,3 +1,6 @@
+/* Import reflect-metadata so TypeDI works */
+import "reflect-metadata";
+
 /* Export all available modules */
 export * from "./base";
 export * from "./models";

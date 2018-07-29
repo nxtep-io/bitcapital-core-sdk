@@ -1,19 +1,21 @@
 import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import { HttpInterceptor } from "./HttpInterceptor";
+import { Service } from "typedi";
 
 export { HttpInterceptor };
 export type HttpClient = AxiosInstance;
 export type HttpRequestOptions = AxiosRequestConfig;
 
-export interface HttpOptions extends HttpRequestOptions {
+export interface HttpServiceOptions extends HttpRequestOptions {
   client?: HttpClient;
 }
 
-export default class Http {
-  protected options: HttpOptions;
+@Service()
+export default class HttpService {
+  protected options: HttpServiceOptions;
   protected client: HttpClient;
 
-  constructor(options: HttpOptions) {
+  initialize(options: HttpServiceOptions) {
     this.options = options;
     this.client = options.client || Axios.create(options);
   }

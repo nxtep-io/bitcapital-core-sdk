@@ -1,29 +1,29 @@
 import { User, UserSchema } from "../models";
-import { HttpInterceptor, HttpOptions } from "../base";
 import { Observable, Observer, StorageUtil, LocalStorage } from "../utils";
-import { OAuthWebService, OAuthWebServiceOptions, UserWebService } from "../services";
+import { OAuthWebService, UserWebService, HttpService, HttpInterceptor } from "../services";
 import { SessionCredentialsInterceptor, SessionUnauthorizedInterceptor } from "./interceptors";
+import { Service, Inject } from "typedi";
 
 export interface SessionOptions {
-  http?: HttpOptions;
   autoFetch?: boolean;
   storage?: StorageUtil;
-  oauth?: OAuthWebServiceOptions;
-  userWebService?: UserWebService;
-  oauthWebService?: OAuthWebService;
 }
 
+@Service()
 export default class Session {
   current?: User;
   storage: StorageUtil;
   observable: Observable;
-  userWebService: UserWebService;
-  oauthWebService: OAuthWebService;
   _interceptors: HttpInterceptor[] = [];
 
-  public static EVENT_SESSION_CHANGED = "SESSION_CHANGED";
+  @Inject(type => UserWebService)
+  userWebService: UserWebService;
 
-  protected static instance: Session;
+  @Inject() oauthWebService: OAuthWebService;
+
+  @Inject() http: HttpService;
+
+  public static EVENT_SESSION_CHANGED = "SESSION_CHANGED";
 
   constructor(public options: SessionOptions) {
     this.observable = new Observable();
@@ -34,10 +34,6 @@ export default class Session {
       new SessionCredentialsInterceptor(this),
       new SessionUnauthorizedInterceptor(() => this.destroy())
     ];
-
-    // TODO: Service instance or config are required, validate this
-    this.oauthWebService = options.oauthWebService || OAuthWebService.getInstance({ ...options.oauth });
-    this.userWebService = options.userWebService || UserWebService.getInstance({ session: this, ...options.http });
 
     // Fetch session in startup by default
     if ((options.autoFetch as any) !== false) {
@@ -50,18 +46,6 @@ export default class Session {
    */
   interceptors(): HttpInterceptor[] {
     return this._interceptors;
-  }
-
-  /**
-   * Gets session singleton instance.
-   *
-   * @param options The session options
-   */
-  public static getInstance(options: SessionOptions): Session {
-    if (!this.instance) {
-      this.instance = new Session(options);
-    }
-    return this.instance;
   }
 
   /**
@@ -86,13 +70,15 @@ export default class Session {
    * Registers a new user in session, notifying all observers.
    *
    * @param user The user instance
-   * @param {{notify: boolean}} options The operation options
+   * @param options The operation options
    */
   public async register(user: User, options = { notify: true }) {
     this.current = user;
 
     // Save in local storage
     await this.storage.put("session", this.current);
+
+    this.http.interceptors(this._interceptors);
 
     // At last, notify observers of this change
     if (!options || (options && options.notify)) {

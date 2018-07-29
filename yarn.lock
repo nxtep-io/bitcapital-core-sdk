@@ -4219,6 +4219,10 @@ type-check@~0.3.2:
   dependencies:
     prelude-ls "~1.1.2"
 
+typedi@^0.8.0:
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/typedi/-/typedi-0.8.0.tgz#d8e203bd1d41a96e2b0a5c6295147d74b2b2d03e"
+
 typedoc-clarity-theme@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/typedoc-clarity-theme/-/typedoc-clarity-theme-1.1.0.tgz#11294adde4f342e2fc66a5fa62a6fb7438cc561c"
